@@ -55,6 +55,15 @@
                             </template>
                         </div>
 
+                        <div class="text-mid">
+                            <p class="text-sm font-mono">
+                                {{ calculatePrice(swap) }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ swap.pool.token0Symbol }}/{{ swap.pool.token1Symbol }}
+                            </p>
+                        </div>
+
                         <!-- 右侧正数显示 -->
                         <div class="text-green-500 text-right flex-1">
                             <template v-for="amount in [swap.amount0, swap.amount1]">
@@ -65,6 +74,14 @@
                             </template>
                         </div>
                     </div>
+                    <!-- <div class="text-right">
+                        <p class="text-sm font-mono">
+                            {{ calculatePrice(swap) }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ swap.pool.token0Symbol }}/{{ swap.pool.token1Symbol }}
+                        </p>
+                    </div> -->
                 </a>
             </div>
             <div v-if="loading" class="text-center dark:text-gray-400">加载中...</div>
@@ -378,6 +395,36 @@
                     if (!localStorage.getItem('darkMode')) {
                         this.isDarkMode = event.matches;
                     }
+                },
+
+                // 新增价格计算方法
+                calculatePrice(swap) {
+                    const amount0 = Math.abs(parseFloat(swap.amount0));
+                    const amount1 = Math.abs(parseFloat(swap.amount1));
+
+                    // 处理零值问题
+                    if (amount0 === 0 || amount1 === 0) return 'N/A';
+
+                    // 计算价格逻辑
+                    const isToken0In = swap.amount0 > 0;
+                    const price = isToken0In ? amount1 / amount0 : amount0 / amount1;
+
+                    // 确定价格方向
+                    const direction = isToken0In ? '↓' : '↑';
+
+                    // 格式化输出
+                    return `${direction} ${this.formatPrice(price)}`;
+                },
+
+                // 价格格式化方法
+                formatPrice(value) {
+                    if (value >= 1000) {
+                        return value.toExponential(2);
+                    }
+                    if (value >= 0.01) {
+                        return value.toFixed(4).replace(/\.?0+$/, '');
+                    }
+                    return value.toExponential(3);
                 },
             }
         }).mount('#app');

@@ -407,7 +407,7 @@
 
                     // 计算价格逻辑
                     const isToken0In = swap.amount0 > 0;
-                    const price = isToken0In ? amount1 / amount0 : amount0 / amount1;
+                    const price = amount0 / amount1;
 
                     // 确定价格方向
                     const direction = isToken0In ? '↓' : '↑';

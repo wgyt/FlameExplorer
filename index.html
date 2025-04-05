@@ -14,20 +14,34 @@
 
 <body>
     <div id="app" :class="{'dark': isDarkMode}" class="min-h-screen transition-colors duration-300">
-        <!-- 头部 -->
+        <!-- 头部控制栏 -->
         <header class="dark:bg-gray-900 bg-gray-100 p-4 flex justify-between items-center shadow-md">
-            <!-- 流动池选择 -->
-            <select v-model="selectedPool" @change="handlePoolChange" class="dark:bg-gray-800 dark:text-white p-2 rounded-lg w-48 
-                border dark:border-gray-600 mobile:w-32">
-                <option v-for="pool in pools" :value="pool.id">
-                    {{ pool.token0Symbol }}/{{ pool.token1Symbol }} {{ pool.feeTier }}
-                </option>
-            </select>
-
-            <!-- 暗黑模式切换 -->
-            <button @click="toggleDarkMode" class="dark:bg-gray-700 bg-gray-200 p-2 rounded-full">
-                <span class="material-icons">{{ isDarkMode ? '🌞' : '🌙' }}</span>
-            </button>
+            <!-- 左侧：流动池选择器 -->
+            <div class="flex-1 max-w-xs">
+                <select v-model="selectedPool" @change="handlePoolChange" class="dark:bg-gray-800 dark:text-white p-2 rounded-lg w-48 
+        border dark:border-gray-600 mobile:w-32">
+                    <option v-for="pool in pools" :value="pool.id">
+                        {{ pool.token0Symbol }}/{{ pool.token1Symbol }} {{ pool.feeTier }}
+                    </option>
+                </select>
+            </div>
+            <!-- 中间：刷新按钮 -->
+            <div class="mx-4">
+                <button @click="manualRefresh" class="p-2 rounded-full transition-colors">
+                    <svg id="refresh-icon" :key="refreshKey" class="w-6 h-6 text-blue-500 dark:text-blue-400"
+                        :class="{ 'animate-spin': isLoading }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+            <!-- 右侧：功能按钮组 -->
+            <div class="flex items-center gap-3">
+                <!-- 暗黑模式切换 -->
+                <button @click="toggleDarkMode" class="dark:bg-gray-700 bg-gray-200 p-2 rounded-full">
+                    <span class="material-icons">{{ isDarkMode ? '🌞' : '🌙' }}</span>
+                </button>
+            </div>
         </header>
 
         <main class="p-4 max-w-6xl mx-auto overflow-y-auto h-[calc(100vh-80px)]">
@@ -176,6 +190,7 @@
         createApp({
             data() {
                 return {
+                    refreshKey: 0, // 新增刷新按钮动画控制密钥,强制重新创建SVG元素
                     currentTime: Date.now(),
                     isDarkMode: true,
                     pools: [],
@@ -273,7 +288,6 @@
 
                 async loadSwaps(isRefresh = false) {
                     if (isRefresh) {
-                        this.skip = 0;
                         this.swaps = [];
                     }
                     if (this.loading || !this.selectedPool) return;
@@ -426,6 +440,24 @@
                     }
                     return value.toExponential(3);
                 },
+
+                // 新增手动刷新方法
+                async manualRefresh() {
+                    if (this.isLoading) return;
+
+                    this.isLoading = true;
+                    this.refreshKey++; // 强制重新渲染图标
+                    try {
+                        await this.loadSwaps(true);
+                    } catch (error) {
+                        console.error('刷新失败:', error);
+                    } finally {
+                        // 添加动画结束延迟
+                        setTimeout(() => {
+                            this.isLoading = false;
+                        }, 800); // 匹配动画持续时间
+                    }
+                },
             }
         }).mount('#app');
     </script>
@@ -460,6 +492,21 @@
             @media (max-width: 768px) {
                 grid-template-columns: 1fr;
             }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin {
+            animation: spin 0.8s linear;
+            animation-fill-mode: forwards;
         }
     </style>
 </body>

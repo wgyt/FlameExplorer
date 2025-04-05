@@ -18,9 +18,12 @@
         <header class="dark:bg-gray-900 bg-gray-100 p-4 flex justify-between items-center shadow-md">
             <!-- 左侧：流动池选择器 -->
             <div class="flex-1 max-w-xs">
-                <select v-model="selectedPool" @change="handlePoolChange" class="dark:bg-gray-800 dark:text-white p-2 rounded-lg w-48 
-        border dark:border-gray-600 mobile:w-32">
-                    <option v-for="pool in pools" :value="pool.id">
+		<select v-model="selectedPool" @change="handlePoolChange" class="bg-white text-gray-900 border-gray-300  /* 新增亮色模式基础样式 */
+              dark:bg-gray-800 dark:text-white dark:border-gray-600
+              p-2 rounded-lg w-48 border-2  /* 加粗边框 */
+              mobile:w-32 focus:ring-2 focus:ring-blue-300  /* 添加聚焦效果 */
+              transition-colors duration-200"> <!-- 添加过渡效果 -->
+                    <option v-for="pool in pools" :value="pool.id" class="bg-white dark:bg-gray-800"> <!-- 添加选项背景色 -->
                         {{ pool.token0Symbol }}/{{ pool.token1Symbol }} {{ pool.feeTier }}
                     </option>
                 </select>

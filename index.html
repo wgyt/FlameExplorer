@@ -451,6 +451,7 @@
                     this.isLoading = true;
                     this.refreshKey++; // 强制重新渲染图标
                     try {
+                        this.currentTime = Date.now();
                         await this.loadSwaps(true);
                     } catch (error) {
                         console.error('刷新失败:', error);

@@ -218,9 +218,7 @@
             },
             computed: {
                 filteredSwaps() {
-                    return this.swaps.filter(s =>
-                        this.selectedPool ? s.pool.id === this.selectedPool : true
-                    );
+                    return [...this.swaps].sort(this.compareSwaps);
                 }
             },
             watch: {
@@ -440,6 +438,27 @@
                         await this.loadSwaps(true);
                     } catch (error) {
                         console.error('刷新失败:', error);
+                    }
+                },
+
+                compareSwaps(a, b) {
+                    // 第一优先级：按时间降序
+                    if (b.timestamp !== a.timestamp) {
+                        return b.timestamp - a.timestamp;
+                    }
+                    // 计算价格逻辑
+                    const isToken0In = a.amount0 > 0;
+                    const aPrice = Math.abs(parseFloat(a.amount0)) / Math.abs(parseFloat(a.amount1));
+                    const bPrice = Math.abs(parseFloat(b.amount0)) / Math.abs(parseFloat(b.amount1));
+
+                    // 确定价格方向
+                    const direction = isToken0In ? '卖' : '买';
+
+                    // 第二优先级：价格排序（买单高价优先，卖单低价优先）
+                    if (direction === '买') {
+                        return bPrice - aPrice; // 买单降序
+                    } else {
+                        return aPrice - bPrice; // 卖单升序
                     }
                 },
             }
